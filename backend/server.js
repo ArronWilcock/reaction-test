@@ -54,6 +54,11 @@ const io = socketIo(server, {
 io.on("connection", (socket) => {
   console.log("Client connected");
 
+  socket.on("start:test", () => {
+    console.log("Starting test...");
+    serialPort.write("START\n"); // Send a signal to Arduino to start the test
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
