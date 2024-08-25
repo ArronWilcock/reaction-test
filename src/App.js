@@ -2,37 +2,32 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './App.css'; // Import custom styles if needed
 
-const socket = io(); // Connect to the backend server automatically
+const socket = io("http://localhost:4000"); // Connect to the backend server
 
 const App = () => {
-  // State to store leaderboard data
   const [leaderboard, setLeaderboard] = useState([]);
 
-  // Effect to set up socket.io connection and event listeners
   useEffect(() => {
-    // Listen for 'arduino:data' events from the server
     socket.on('arduino:data', (data) => {
       console.log('Data received from Arduino:', data);
 
-      // Parse the received data and update the leaderboard
-      const reactionTime = parseInt(data.trim(), 10);
-      if (!isNaN(reactionTime)) {
-        setLeaderboard((prevLeaderboard) => {
-          // Create a new leaderboard entry
-          const newEntry = { reactionTime, timestamp: new Date().toLocaleString() };
+      // Extract reaction time from the received data
+      const match = data.match(/Your reaction time: (\d+) ms/);
+      if (match) {
+        const reactionTime = parseInt(match[1], 10);
+        if (!isNaN(reactionTime)) {
+          setLeaderboard((prevLeaderboard) => {
+            const newEntry = { reactionTime, timestamp: new Date().toLocaleString() };
+            const updatedLeaderboard = [...prevLeaderboard, newEntry].sort(
+              (a, b) => a.reactionTime - b.reactionTime
+            );
 
-          // Add the new entry and sort the leaderboard by reaction time
-          const updatedLeaderboard = [...prevLeaderboard, newEntry].sort(
-            (a, b) => a.reactionTime - b.reactionTime
-          );
-
-          // Limit the leaderboard to top 10 entries
-          return updatedLeaderboard.slice(0, 10);
-        });
+            return updatedLeaderboard.slice(0, 10); // Limit to top 10 entries
+          });
+        }
       }
     });
 
-    // Cleanup function to remove event listeners when component unmounts
     return () => {
       socket.off('arduino:data');
     };
@@ -48,7 +43,6 @@ const App = () => {
   );
 };
 
-// Component to display the leaderboard
 const Leaderboard = ({ leaderboard }) => (
   <div className="Leaderboard">
     <h2>Top Reaction Times</h2>

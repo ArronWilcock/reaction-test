@@ -1,13 +1,12 @@
-require('dotenv').config();  // Load environment variables from .env file
+require("dotenv").config();
+const http = require("http");
+const socketIo = require("socket.io");
+const { SerialPort } = require("serialport");
+const { ReadlineParser } = require("@serialport/parser-readline");
+const app = require("./app");
 
-const http = require('http');
-const { Server } = require('socket.io');
-const { app, parser } = require('./App.js'); // Import app and parser
-
-// Normalize port function to return a valid port
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
-
   if (isNaN(port)) {
     return val;
   }
@@ -17,24 +16,22 @@ const normalizePort = (val) => {
   return false;
 };
 
-// Set port from environment or default to 3000
-const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+const port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
 
-// Error handler function for the server
 const errorHandler = (error) => {
-  if (error.syscall !== 'listen') {
+  if (error.syscall !== "listen") {
     throw error;
   }
   const address = server.address();
-  const bind = typeof address === 'string' ? 'pipe ' + address : 'port: ' + port;
+  const bind = typeof address === "string" ? "pipe " + address : "port: " + port;
   switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges.');
+    case "EACCES":
+      console.error(bind + " requires elevated privileges.");
       process.exit(1);
       break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use.');
+    case "EADDRINUSE":
+      console.error(bind + " is already in use.");
       process.exit(1);
       break;
     default:
@@ -42,33 +39,46 @@ const errorHandler = (error) => {
   }
 };
 
-// Create HTTP server using the Express app
 const server = http.createServer(app);
 
-// Integrate socket.io with the server
-const io = new Server(server);
+// Setup CORS for socket.io
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000", // Replace with your frontend URL
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true
+  }
+});
 
-// Socket.io connection setup
-io.on('connection', (socket) => {
-  console.log('New client connected');
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
+io.on("connection", (socket) => {
+  console.log("Client connected");
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
   });
 });
 
-// Handle incoming serial data with io.emit here
-parser.on('data', (data) => {
-  console.log('Data received from Arduino:', data);
-  io.emit('arduino:data', data); // Emit data to all connected clients
+const portName = "COM4"; // Replace with your Arduino's port name
+const serialPort = new SerialPort({ path: portName, baudRate: 9600 });
+
+// Correct usage: call ReadlineParser as a function
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+
+parser.on("data", (data) => {
+  console.log("Data from Arduino:", data);
+  io.emit("arduino:data", data);
 });
 
-// Event listeners for server
-server.on('error', errorHandler);
-server.on('listening', () => {
+serialPort.on("error", (err) => {
+  console.error("Error: ", err.message);
+});
+
+server.on("error", errorHandler);
+server.on("listening", () => {
   const address = server.address();
-  const bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + port;
-  console.log('Listening on ' + bind);
+  const bind = typeof address === "string" ? "pipe " + address : "port " + port;
+  console.log("Listening on " + bind);
 });
 
-// Start listening on the specified port
 server.listen(port);
