@@ -8,11 +8,19 @@ const App = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
-  const [isTestStarted, setIsTestStarted] = useState(false);
+  const [testInProgress, setTestInProgress] = useState(false);
 
   useEffect(() => {
     socket.on('arduino:data', (data) => {
       console.log('Data received from Arduino:', data);
+
+      if (data.includes('Test complete')) {
+        // Reset test state and clear inputs
+        setTestInProgress(false);
+        setName('');
+        setLocation('');
+        return;
+      }
 
       // Extract reaction time from the received data
       const match = data.match(/Your reaction time: (\d+) ms/);
@@ -39,9 +47,9 @@ const App = () => {
   const startTest = () => {
     if (name && location) {
       socket.emit('start:test');
-      setIsTestStarted(true);
+      setTestInProgress(true);
     } else {
-      alert('Please enter your name and location.');
+      alert('Please enter both name and location.');
     }
   };
 
@@ -49,24 +57,24 @@ const App = () => {
     <div className="App">
       <header className="App-header">
         <h1>Arduino Reaction Test Leaderboard</h1>
-        {!isTestStarted ? (
+        {testInProgress ? (
+          <p>Test in progress...</p>
+        ) : (
           <div>
             <input
               type="text"
-              placeholder="Your Name"
+              placeholder="Enter your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <input
               type="text"
-              placeholder="Your Location"
+              placeholder="Enter your location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
             <button onClick={startTest}>Start Test</button>
           </div>
-        ) : (
-          <p>Test in progress...</p>
         )}
         <Leaderboard leaderboard={leaderboard} />
       </header>
