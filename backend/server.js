@@ -50,24 +50,8 @@ const io = socketIo(server, {
     origin: "http://localhost:3000", // Replace with your frontend URL
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
-    credentials: true
-  }
-});
-
-// Handle socket.io connections
-io.on("connection", (socket) => {
-  console.log("Client connected");
-
-  // Handle the start test event from the frontend
-  socket.on("start:test", () => {
-    console.log("Starting test...");
-    serialPort.write("START\n"); // Send a signal to Arduino to start the test
-  });
-
-  // Handle disconnection
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
+    credentials: true,
+  },
 });
 
 // Define Arduino serial port
@@ -77,19 +61,70 @@ const serialPort = new SerialPort({ path: portName, baudRate: 9600 });
 // Setup parser for incoming data from Arduino
 const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
+// State variables to track mode and player data
+let isVsMode = false;
+
+// Handle socket.io connections
+io.on("connection", (socket) => {
+  console.log("Client connected");
+
+  // Handle the start test event for single-player mode
+  socket.on("start:test:single", () => {
+    console.log("Starting single-player test...");
+    isVsMode = false; // Set mode to single player
+    serialPort.write("START_SINGLE\n"); // Send a signal to Arduino to start the test in single-player mode
+  });
+
+  // Handle the start test event for vs mode
+  socket.on("start:test:vs", () => {
+    console.log("Starting vs mode test...");
+    isVsMode = true; // Set mode to vs mode
+    serialPort.write("START_VS\n"); // Send a signal to Arduino to start the test in vs mode
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+
 // Handle incoming data from Arduino
 parser.on("data", (data) => {
   console.log("Data from Arduino:", data.trim());
-  
+
   // Relay data to all connected clients
   io.emit("arduino:data", data.trim());
-  
+
   // Check for "test complete" signal
   if (data.includes("Test complete")) {
     console.log("Test complete signal received");
     io.emit("test:complete"); // Emit an event to inform the frontend
   }
+
+  // Handle vs mode results separately
+  if (isVsMode && data.includes("vs mode results")) {
+    console.log("VS Mode results received");
+    // Parse results and determine winner
+    const results = parseVsModeResults(data);
+    io.emit("test:vs:results", results); // Emit an event to inform the frontend of VS mode results
+  }
 });
+
+// Function to parse vs mode results
+function parseVsModeResults(data) {
+  // Example parsing logic; customize based on actual data format from Arduino
+  const [player1Time, player2Time] = data
+    .split("vs mode results:")[1]
+    .trim()
+    .split(",");
+  const winner = player1Time < player2Time ? "Player 1" : "Player 2";
+
+  return {
+    player1Time: parseInt(player1Time, 10),
+    player2Time: parseInt(player2Time, 10),
+    winner,
+  };
+}
 
 // Handle serial port errors
 serialPort.on("error", (err) => {
