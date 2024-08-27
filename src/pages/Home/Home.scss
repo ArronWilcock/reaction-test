@@ -1,0 +1,23 @@
+.home {
+  display: flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 150px;
+
+}
+
+
+.home_options {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+}
+.btn_options {
+  padding: 10px;
+  width: 150px;
+  
+}
+.btn_options:hover {
+  cursor: pointer;
+}

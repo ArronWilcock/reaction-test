@@ -1,0 +1,76 @@
+@import "../../styles/utils/variables";
+@import "../../styles/utils/mixins";
+
+.rt-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  height: 150px;
+  color: black;
+  padding: 0 32px;
+  border-bottom: solid 3px black;
+
+  @include mobile {
+    height: auto;
+    flex-direction: column;
+  }
+}
+.Amz-logo {
+  max-height: 150px;
+  z-index: -1;
+
+  @include mobile {
+    height: 250px;
+    content: url("../../images/amazon.png");
+    margin: -30px;
+  }
+}
+.right-nav {
+  display: flex;
+  height: 100%;
+
+  & > ul > li > a {
+    display: flex;
+    align-self: center;
+    text-decoration: none;
+    color: #000;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  & > ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+
+    @include mobile {
+      width: 100%;
+      justify-content: space-around;
+    }
+  }
+  & > ul > li {
+    display: flex;
+    padding: 10px;
+    border-top-style: solid;
+    border-top-width: 2px;
+    border-top-color: #fff;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-bottom-color: #fff;
+
+    @include desktop {
+      &:hover {
+        border-top-color: red;
+      }
+    }
+    @include mobile {
+      &:hover {
+        border-top-color: red;
+      }
+    }
+  }
+  @include mobile {
+    width: 100%;
+    padding: 10px;
+  }
+}
