@@ -1,0 +1,87 @@
+// Center the leaderboard container and add padding
+.leaderboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  // Winner announcement styling
+  .winner-announcement {
+    background-color: #e0ffe0;
+    border: 1px solid #b2ffb2;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  // Leaderboard heading styling
+  .leaderboard-heading {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  // Leaderboard list styling
+  .leaderboard-list {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+  }
+  
+  // Individual leaderboard entry styling
+  .leaderboard-entry {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  
+    &:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  // Player info styling within leaderboard entry
+  .player-info {
+    font-size: 16px;
+    color: #555;
+  }
+  
+  // Reaction time and timestamp styling within leaderboard entry
+  .entry-details {
+    font-size: 14px;
+    color: #777;
+    text-align: right;
+  }
+  
+  // Media query for responsiveness
+  @media (max-width: 480px) {
+    .leaderboard-container {
+      padding: 15px;
+    }
+  
+    .leaderboard-entry {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .entry-details {
+      margin-top: 10px;
+      text-align: left;
+    }
+  }
+  

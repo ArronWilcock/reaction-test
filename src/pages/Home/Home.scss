@@ -1,23 +1,45 @@
+@import "../../styles/utils/variables";
+@import "../../styles/utils/mixins";
+
 .home {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: 150px;
-
+  padding-top: 50px;
+  color: $primary;
 }
 
-
-.home_options {
+.home-options {
   display: flex;
   justify-content: center;
   gap: 50px;
+  padding: 100px 0;
 }
-.btn_options {
-  padding: 10px;
-  width: 150px;
-  
+h1{
+  display: flex;
 }
-.btn_options:hover {
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background-color: $primary;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
 }

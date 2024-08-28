@@ -1,3 +1,6 @@
+@import "../../styles/utils/variables";
+@import "../../styles/utils/mixins";
+
 .loading-spinner {
     position: fixed;
     display: flex;
@@ -34,7 +37,7 @@
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #161e2d;
+    background: $primary;
     margin: -4px 0 0 -4px;
   }
   

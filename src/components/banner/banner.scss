@@ -18,11 +18,10 @@
 }
 .Amz-logo {
   max-height: 150px;
-  z-index: -1;
 
   @include mobile {
     height: 250px;
-    content: url("../../images/amazon.png");
+    content: url("../../images/Amz-logo.png");
     margin: -30px;
   }
 }
@@ -60,12 +59,12 @@
 
     @include desktop {
       &:hover {
-        border-top-color: red;
+        border-top-color: $primary;
       }
     }
     @include mobile {
       &:hover {
-        border-top-color: red;
+        border-top-color: $primary;
       }
     }
   }

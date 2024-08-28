@@ -1,14 +1,11 @@
-// components/leaderboard/Leaderboard.js
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import './leaderboard.scss'; // Import the SCSS file
 
 const socket = io('http://localhost:4000'); // Connect to the backend server
 
-const Leaderboard = ({ mode }) => {
+const Leaderboard = ({ mode, player1, player2, testInProgress, onTestComplete }) => {
   const [leaderboard, setLeaderboard] = useState([]);
-  const [player1, setPlayer1] = useState({ name: '', location: '' });
-  const [player2, setPlayer2] = useState({ name: '', location: '' });
-  const [testInProgress, setTestInProgress] = useState(false);
   const [winner, setWinner] = useState('');
 
   useEffect(() => {
@@ -17,11 +14,9 @@ const Leaderboard = ({ mode }) => {
       console.log('Data received from Arduino:', data);
 
       if (data.includes('Test complete')) {
-        // Reset test state and clear inputs
-        setTestInProgress(false);
+        // Notify parent component that the test is complete
+        onTestComplete();
         setWinner('');
-        setPlayer1({ name: '', location: '' });
-        setPlayer2({ name: '', location: '' });
         return;
       }
 
@@ -83,72 +78,25 @@ const Leaderboard = ({ mode }) => {
     return () => {
       socket.off('arduino:data');
     };
-  }, [mode, player1, player2]);
-
-  const startTest = () => {
-    setTestInProgress(true);
-    if (mode === 'single') {
-      socket.emit('start:test:single');
-    } else if (mode === 'vs') {
-      socket.emit('start:test:vs');
-    }
-  };
+  }, [mode, player1, player2, onTestComplete]);
 
   return (
-    <div>
+    <div className="leaderboard-container">
       {mode === 'vs' && winner && (
-        <div>
+        <div className="winner-announcement">
           <h3>{winner} Wins!</h3>
         </div>
       )}
-      <h3>Leaderboard</h3>
-      <input
-        type="text"
-        value={player1.name}
-        onChange={(e) => setPlayer1({ ...player1, name: e.target.value })}
-        placeholder={mode === 'single' ? "Enter your name" : "Enter Player 1's name"}
-        disabled={testInProgress}
-      />
-      <input
-        type="text"
-        value={player1.location}
-        onChange={(e) => setPlayer1({ ...player1, location: e.target.value })}
-        placeholder={mode === 'single' ? "Enter your location" : "Enter Player 1's location"}
-        disabled={testInProgress}
-      />
-      {mode === 'vs' && (
-        <>
-          <input
-            type="text"
-            value={player2.name}
-            onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-            placeholder="Enter Player 2's name"
-            disabled={testInProgress}
-          />
-          <input
-            type="text"
-            value={player2.location}
-            onChange={(e) => setPlayer2({ ...player2, location: e.target.value })}
-            placeholder="Enter Player 2's location"
-            disabled={testInProgress}
-          />
-        </>
-      )}
-      <button
-        onClick={startTest}
-        disabled={
-          testInProgress ||
-          !player1.name ||
-          !player1.location ||
-          (mode === 'vs' && (!player2.name || !player2.location))
-        }
-      >
-        Start {mode === 'single' ? 'Test' : 'VS Mode Test'}
-      </button>
-      <ul>
+      <h3 className="leaderboard-heading">Leaderboard</h3>
+      <ul className="leaderboard-list">
         {leaderboard.map((entry, index) => (
-          <li key={index}>
-            {entry.name} ({entry.location}) - {entry.reactionTime} ms - {entry.timestamp}
+          <li key={index} className="leaderboard-entry">
+            <div className="player-info">
+              {entry.name} ({entry.location})
+            </div>
+            <div className="entry-details">
+              {entry.reactionTime} ms - {entry.timestamp}
+            </div>
           </li>
         ))}
       </ul>
@@ -157,4 +105,3 @@ const Leaderboard = ({ mode }) => {
 };
 
 export default Leaderboard;
-
