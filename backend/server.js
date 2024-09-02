@@ -97,7 +97,6 @@ parser.on("data", (data) => {
 
   // Check for "test complete" signal
   if (data.includes("Test complete")) {
-    console.log("Test complete signal received");
     io.emit("test:complete"); // Emit an event to inform the frontend
   }
 

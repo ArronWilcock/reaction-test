@@ -1,5 +1,7 @@
 const express = require("express");
+require("./models/index");
 const cors = require("cors"); // Import the cors package
+const scoreRoutes = require('./routes/score');
 
 const app = express();
 
@@ -29,6 +31,6 @@ app.use((req, res, next) => {
   );
   next();
 });
+app.use('/api', scoreRoutes);
 
-// express app exported so that it can be accessed outside the js file
 module.exports = app;

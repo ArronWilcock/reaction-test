@@ -1,3 +1,5 @@
+// leaderboard.jsx
+
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './leaderboard.scss'; // Import the SCSS file
@@ -8,7 +10,49 @@ const Leaderboard = ({ mode, player1, player2, testInProgress, onTestComplete })
   const [leaderboard, setLeaderboard] = useState([]);
   const [winner, setWinner] = useState('');
 
+  // Function to add score to the database
+  const addScoreToDatabase = async (name, location, reactionTime) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/scores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          location,
+          reactionTime,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add score');
+      }
+
+      const newScore = await response.json();
+      console.log('Score added:', newScore);
+    } catch (error) {
+      console.error('Error adding score to the database:', error);
+    }
+  };
+
+  // Fetch all scores from the backend
+  const fetchScores = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/scores');
+      if (!response.ok) {
+        throw new Error('Failed to fetch scores');
+      }
+      const scores = await response.json();
+      setLeaderboard(scores);
+    } catch (error) {
+      console.error('Error fetching scores:', error);
+    }
+  };
+
   useEffect(() => {
+    fetchScores(); // Fetch scores on component mount
+
     // Listen for data from the backend server
     socket.on('arduino:data', (data) => {
       console.log('Data received from Arduino:', data);
@@ -26,15 +70,8 @@ const Leaderboard = ({ mode, player1, player2, testInProgress, onTestComplete })
         if (match) {
           const reactionTime = parseInt(match[1], 10);
           if (!isNaN(reactionTime)) {
-            setLeaderboard((prevLeaderboard) => {
-              const newEntry = {
-                name: player1.name,
-                location: player1.location,
-                reactionTime,
-                timestamp: new Date().toLocaleString(),
-              };
-              return [...prevLeaderboard, newEntry];
-            });
+            addScoreToDatabase(player1.name, player1.location, reactionTime);
+            fetchScores(); // Re-fetch scores to update the leaderboard
           }
         }
       } else if (mode === 'vs') {
@@ -46,29 +83,15 @@ const Leaderboard = ({ mode, player1, player2, testInProgress, onTestComplete })
           setWinner(player1.name);
           const reactionTime = parseInt(matchPlayer1[1], 10);
           if (!isNaN(reactionTime)) {
-            setLeaderboard((prevLeaderboard) => {
-              const newEntry = {
-                name: player1.name,
-                location: player1.location,
-                reactionTime,
-                timestamp: new Date().toLocaleString(),
-              };
-              return [...prevLeaderboard, newEntry];
-            });
+            addScoreToDatabase(player1.name, player1.location, reactionTime);
+            fetchScores(); // Re-fetch scores to update the leaderboard
           }
         } else if (matchPlayer2) {
           setWinner(player2.name);
           const reactionTime = parseInt(matchPlayer2[1], 10);
           if (!isNaN(reactionTime)) {
-            setLeaderboard((prevLeaderboard) => {
-              const newEntry = {
-                name: player2.name,
-                location: player2.location,
-                reactionTime,
-                timestamp: new Date().toLocaleString(),
-              };
-              return [...prevLeaderboard, newEntry];
-            });
+            addScoreToDatabase(player2.name, player2.location, reactionTime);
+            fetchScores(); // Re-fetch scores to update the leaderboard
           }
         }
       }
@@ -92,10 +115,10 @@ const Leaderboard = ({ mode, player1, player2, testInProgress, onTestComplete })
         {leaderboard.map((entry, index) => (
           <li key={index} className="leaderboard-entry">
             <div className="player-info">
-              {entry.name} ({entry.location})
+              {entry.login} ({entry.location})
             </div>
             <div className="entry-details">
-              {entry.reactionTime} ms - {entry.timestamp}
+              {entry.score} ms
             </div>
           </li>
         ))}
